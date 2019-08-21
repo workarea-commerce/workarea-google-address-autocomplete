@@ -1,0 +1,175 @@
+/**
+ * Displays a jQuery Geocomplete-enabled form control within a set of address-
+ * specific form controls.
+ *
+ * @namespace WORKAREA.googleAddressAutocomplete
+ */
+WORKAREA.registerModule('googleAddressAutocomplete', (function () {
+    'use strict';
+
+    var autocompleteTemplate = JST['workarea/storefront/google_address_autocomplete/templates/autocomplete_text_box'],
+        apiEndpoint = '//maps.googleapis.com/maps/api/js',
+        loadingPlacesApi = $.Deferred(),
+
+        updateInput = function ($container, component) {
+            var mappings = WORKAREA.config.googleAddressAutocomplete.mappings,
+                $inputs, value;
+
+            if (_.isUndefined(mappings[component.type])) { return; }
+
+            $inputs = $(mappings[component.type].selector, $container);
+
+            if (mappings[component.type].shortName) {
+                value = component.value.short_name;
+            } else {
+                value = component.value.long_name;
+            }
+
+            $inputs.each(function (index, input) {
+                var $input = $(input);
+
+                if (_.isEmpty(input.value)) {
+                    $input.val(value);
+                } else {
+                    $input.val($input.val() + ' ' + value);
+                }
+
+                // Prevents a race condition with base's region select feature
+                if ($input.is('[name$=region_select]')) {
+                    _.defer(function() {
+                        $input.val(value);
+                    });
+                }
+
+                $input.trigger('change');
+            });
+        },
+
+        mutateResult = function (result) {
+            return _.map(result.address_components, function (component) {
+                return {
+                    type: component.types[0],
+                    value: {
+                        long_name: component.long_name,
+                        short_name: component.short_name
+                    }
+                };
+            });
+        },
+
+        getInputs = function ($container) {
+            var mappings = WORKAREA.config.googleAddressAutocomplete.mappings,
+                inputSelectors = _.map(mappings, function (mapping) {
+                    return mapping.selector;
+                });
+
+            return $(inputSelectors.join(','), $container);
+        },
+
+        updateForm = function (input, event, result) {
+            var $container = $(input).closest('.property').parent(),
+                $inputs = getInputs($container);
+
+            event.preventDefault();
+
+            $inputs.val(null);
+
+            _.forEach(mutateResult(result), _.partial(updateInput, $container));
+        },
+
+        injectNewProperty = function (input, $newProperty) {
+            $(input)
+                .closest('.property')
+                .before($newProperty);
+        },
+
+        updatePropertyLabel = function ($newProperty, input) {
+            var id = $(autocompleteTemplate({
+                index: $('[data-google-address-autocomplete]').length
+            })).attr('id');
+
+            $('[for]', $newProperty)
+            .text(I18n.t('workarea.storefront.google_address_autocomplete.property_label'))
+            .attr('for', id);
+
+            WORKAREA.initModules($newProperty);
+        },
+
+        replacePropertyTextbox = function ($newProperty, index) {
+            $('.value', $newProperty).html(autocompleteTemplate({
+                index: $('[data-google-address-autocomplete]').length
+            }));
+        },
+
+        cloneProperty = function (input) {
+            return $(input).closest('.property').clone();
+        },
+
+        initAutocomplete = function (index, input) {
+            loadingPlacesApi.done(function () {
+                var $newProperty = cloneProperty(input);
+
+                replacePropertyTextbox($newProperty, input);
+                updatePropertyLabel($newProperty, index);
+
+                injectNewProperty(input, $newProperty);
+
+                $('.text-box', $newProperty)
+                .geocomplete()
+                .on('geocode:result', _.partial(updateForm, input));
+            });
+        },
+
+        apiLoaded = function () {
+            var $apiScript = $('script').filter(function (index, script) {
+                return ! _.isEmpty(script.src.match('maps.googleapis.com'));
+            });
+
+            return ! _.isEmpty($apiScript);
+        },
+
+        loadPlacesApi = function (index) {
+            if (apiLoaded()) { return; }
+
+            $.getScript(
+                apiEndpoint +
+                '?libraries=places' +
+                '&key=' + WORKAREA.config.googleAddressAutocomplete.apiKey +
+                '&callback=WORKAREA.googleAddressAutocomplete.resolveLoadingPlacesApi'
+            );
+        },
+
+        setupAutocomplete = function (index, input) {
+            loadPlacesApi();
+            initAutocomplete(index, input);
+        },
+
+        /**
+         * A callback method responsible for resolving a module-specific promise
+         * that announces the availability of the Google Places API.
+         *
+         * @method
+         * @name resolveLoadingPlacesApi
+         * @memberOf  WORKAREA.googleAddressAutocomplete
+         * @return {Deferred} required for testing purposes
+         */
+        resolveLoadingPlacesApi = function () {
+            return loadingPlacesApi.resolve();
+        },
+
+        /**
+         * @method
+         * @name init
+         * @memberof WORKAREA.googleAddressAutocomplete
+         */
+        init = function ($scope) {
+            if (!WORKAREA.environment.isTest || <%= ENV['CI'] == 'true' %>) {
+                $(WORKAREA.config.googleAddressAutocomplete.selector, $scope).each(setupAutocomplete);
+            }
+        };
+
+    return {
+        init: init,
+        resolveLoadingPlacesApi: resolveLoadingPlacesApi
+    };
+}()));

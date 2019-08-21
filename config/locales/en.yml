@@ -1,0 +1,6 @@
+en:
+  workarea:
+    storefront:
+      google_address_autocomplete:
+        placeholder: 'Start typing your address...'
+        property_label: 'Address Autocomplete'

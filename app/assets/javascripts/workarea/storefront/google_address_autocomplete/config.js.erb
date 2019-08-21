@@ -1,0 +1,38 @@
+(function () {
+    'use strict';
+
+    /**
+     * @namespace WORKAREA.config
+     * @property {object} googleAddressAutocomplete
+     */
+     WORKAREA.config.googleAddressAutocomplete = {
+        apiKey: '<%= Workarea.config.google_address_autocomplete_api_key %>',
+        selector: '[name$="address[street]"]',
+        mappings: {
+            'street_number': {
+                selector: '[name$="address[street]"]',
+                shortName: false
+            },
+            'route': {
+                selector: '[name$="address[street]"]',
+                shortName: false
+            },
+            'locality': {
+                selector: '[name$="address[city]"]',
+                shortName: false
+            },
+            'administrative_area_level_1': {
+                selector: '[name$="address_region_select"], [name$="address[region]"]',
+                shortName: true
+            },
+            'country': {
+                selector: '[name$="address[country]"]',
+                shortName: true
+            },
+            'postal_code': {
+                selector: '[name$="address[postal_code]"]',
+                shortName: false
+            }
+        }
+     };
+})();

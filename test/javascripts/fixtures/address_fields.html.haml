@@ -1,0 +1,59 @@
+- label = 'shipping_address'
+
+.property.property--responsive
+  = label_tag "shipping_address[first_name]", nil, class: 'property__name' do
+    %span.property__text First Name
+  .value= text_field_tag "shipping_address[first_name]", nil, class: 'text-box', required: true, title: "Shipping First Name"
+
+.property.property--responsive
+  = label_tag "shipping_address[last_name]", nil, class: 'property__name' do
+    %span.property__text Last Name
+  .value= text_field_tag "shipping_address[last_name]", nil, class: 'text-box', required: true, autocorrect: 'off', title: "Shipping Last Name"
+
+.property.property--responsive
+  = label_tag "shipping_address[company]", nil, class: 'property__name' do
+    %span.property__text Company
+  .value= text_field_tag "shipping_address[company]", nil, class: 'text-box', autocorrect: 'off', title: "Shipping Company"
+
+.property.property--responsive
+  = label_tag "shipping_address[street]", nil, class: 'property__name' do
+    %span.property__text Street Line 1
+  .value= text_field_tag "shipping_address[street]", nil, class: 'text-box', required: true, autocorrect: 'off', title: "Shipping Street Line 1"
+
+.property.property--responsive
+  = label_tag "shipping_address[street_2]", nil, class: 'property__name' do
+    %span.property__text Street Line 2
+    %span.property__requirement.property__requirement--optional= t('workarea.storefront.forms.optional')
+  .value= text_field_tag "shipping_address[street_2]", nil, class: 'text-box', autocorrect: 'off', title: "Shipping Street Line 2"
+
+.property.property--responsive
+  = label_tag "shipping_address[city]", nil, class: 'property__name' do
+    %span.property__text City
+  .value= text_field_tag "shipping_address[city]", nil, class: 'text-box', required: true, autocorrect: 'off', title: "Shipping City"
+
+.property.property--responsive
+  = label_tag "shipping_address[region]", nil, class: 'property__name' do
+    %span.property__text Region
+  .value
+    = select_tag "shipping_address[region]", options_for_select(['FOO', 'BAZ']), required: true, title: "Shipping Region"
+
+.property.property--responsive
+  = label_tag "shipping_address[postal_code]", nil, class: 'property__name' do
+    %span.property__text Postal Code
+  .value= text_field_tag "shipping_address[postal_code]", nil, class: 'text-box', pattern: "\\d*", required: true, title: "Shipping Postal Code"
+
+.property.property--responsive
+  = label_tag "shipping_address[country]", nil, class: 'property__name' do
+    %span.property__text Country
+  .value
+    = select_tag "shipping_address[country]", options_for_select(['BAR', 'QUX']), title: "Shipping Country"
+
+.property.property--responsive
+  = label_tag "shipping_address[phone_number]", nil, class: 'property__name' do
+    %span.property__text Phone Number
+  .value= telephone_field_tag "shipping_address[phone_number]", nil, class: 'text-box', placeholder: '555-555-5555', title: "Shipping Phone Number"
+
+.property.property--responsive
+  = label_tag "shipping_address[phone_extension]", nil, class: 'property__name' do
+    %span.property__text Phone Extension
+  .value= text_field_tag "shipping_address[phone_extension]", nil, pattern: "\\d*", class: 'text-box text-box--small', title: "Shipping Phone Extension"
